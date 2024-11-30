@@ -1,150 +1,89 @@
-1. Understand Your Data and Objective
+Project Overview
 
-Objective: Predict whether a company is bankrupt (Bankrupt?) based on financial ratios and metrics.
+This project aims to develop a robust machine learning model to predict bankruptcy status for companies. It involves preparing training data, clustering companies into subgroups, and building stacked models for accurate prediction.
+3.1 Training Data Preparation
 
-Data: 96 financial features per company.
-2. Data Preprocessing
+To improve model efficiency, the number of features is reduced from 95 to between 25 and 50. The steps to prepare the data are:
 
-Before feature selection, ensure your data is clean:
+    Feature Reduction:
+        Select or engineer features to meet the target range (25–50 features).
+        Use domain knowledge, feature selection, and engineering methods.
 
-    Handle Missing Values: Decide on strategies for missing data (e.g., imputation, removal).
-    Normalize/Scale Data: Some algorithms require scaled data for optimal performance.
-    Encode Categorical Variables: If any features are categorical, encode them appropriately.
+    Ensure Non-Multicollinearity:
+        Features in the new training set must not be multicollinear. Validate using methods like correlation matrices or variance inflation factors (VIF).
 
-3. Feature Selection Techniques
-A. Remove Constant and Quasi-Constant Features
+    Gaussian Distribution:
+        Transform each feature to follow a Gaussian distribution (e.g., log transformation or normalization).
 
-    Constant Features: Features that have the same value for all records.
-    Quasi-Constant Features: Features that have the same value for a large majority of records (e.g., 99%).
+3.2 Company Characterization
 
-Action: Identify and remove these features as they provide little to no information.
-B. Correlation Analysis
+Clustering techniques are used to group similar companies to understand their general characteristics. The steps include:
 
-    Purpose: Identify and remove redundant features that are highly correlated with each other.
-    Method:
-        Compute the correlation matrix for all features.
-        Set a correlation threshold (e.g., 0.9).
-        For each pair of features with correlation above the threshold, keep one.
+    Clustering:
+        Use unsupervised learning techniques to cluster companies into kk-many subgroups.
+        The value of kk is based on team size:
+            Minimum k=team sizek=team size
+            Maximum k=2×team sizek=2×team size
+        The target feature (Bankruptcy) is excluded during clustering.
 
-Tools: Use statistical software or programming languages (e.g., Python's pandas, NumPy) to compute correlations.
-C. Univariate Feature Selection
+    Analysis and Reporting:
+        Number of Companies: Report the number of companies in each subgroup.
+        Bankruptcy Balance: Show the balance of bankrupted companies in each subgroup.
+        Subgroup Characteristics:
+            Identify unique or helpful characteristics for each cluster.
+            Use visualization techniques (e.g., plots, charts) to present these characteristics.
 
-    Purpose: Assess each feature individually to see how strongly it relates to the target variable.
-    Methods:
-        Statistical Tests: Use tests like Chi-squared, ANOVA F-test, or mutual information.
-        SelectKBest: Select top K features based on the statistical test scores.
+    Cluster IDs:
+        Save the cluster IDs for each company. These will be used in the next section.
 
-Action: Rank features based on their scores and select the top ones.
-D. Recursive Feature Elimination (RFE)
+3.3 Building Training Models
 
-    Purpose: Select features by recursively considering smaller and smaller sets.
-    Method:
-        Choose a machine learning model (e.g., logistic regression, random forest).
-        Use RFE to select features by recursively removing the least important ones.
+This section involves building models to predict subgroup assignments and bankruptcy status within subgroups.
+Step 1: Predict Subgroup Assignment
 
-Tools: Scikit-learn's RFE class.
-E. Feature Importance from Tree-Based Models
+    Model:
+        Use any supervised learning algorithm to predict the cluster ID for a company.
+        High prediction accuracy is required; overfitting is acceptable at this stage.
+    Feature Importance:
+        Identify and report the most influential features for subgroup prediction.
 
-    Purpose: Use models that provide feature importance scores.
-    Method:
-        Train a model like Random Forest or Gradient Boosting.
-        Extract feature importance scores.
-        Select top features based on importance.
+Step 2: Stacking Model for Bankruptcy Prediction
 
-Action: Keep features with higher importance scores.
-F. Principal Component Analysis (PCA)
+A two-level stacked model is built:
+Base Models
 
-    Purpose: Reduce dimensionality by transforming features into a lower number of principal components.
-    Note: PCA creates new features (components), which are combinations of original features. This may make interpretation harder.
+    Use non-parametric base models (e.g., decision trees, random forests).
+    At least three base models are required for each subgroup.
+    All base models for a subgroup must use the same features (features can differ between subgroups).
 
-Action: Use PCA if feature interpretability is less critical.
-4. Domain Knowledge
+Meta Models
 
-    Leverage Financial Expertise: Some features may be known to be more predictive of bankruptcy.
-    Identify Key Ratios: Ratios like liquidity ratios, solvency ratios, profitability ratios are often crucial.
+    Combine the outputs of the base models in each subgroup to build meta-models.
 
-Action: Prioritize features that are commonly used in financial analysis for bankruptcy prediction.
-5. Iterative Process
+Responsibilities and Reporting
 
-    Model Evaluation: After selecting features, build models and evaluate their performance.
-    Adjust Feature Set: If performance is not satisfactory, revisit feature selection.
+    Each team member works on at least one subgroup.
+    Report the following for each subgroup:
+        Team member's name.
+        Subgroup(s) worked on.
+        Model accuracy and confusion matrix (see format below).
 
-Action: Iterate the process, possibly combining different feature selection methods.
-6. Suggested Features to Consider
+Reporting Table Format:
+Team Member	Subgroup	Accuracy	Confusion Matrix
+Member A	Group 1	92%	[[50, 5], [10, 35]]
+Member B	Group 2	88%	[[45, 8], [15, 32]]
+4. Generalization
 
-Based on financial analysis principles, consider including the following types of features:
+Transform the test dataset using the same process from Section 3.1. Use the trained models to predict each company's bankruptcy status.
 
-    Liquidity Ratios:
-        Current Ratio
-        Quick Ratio
-        Working Capital to Total Assets
+    Submission Format: The results should be saved in a file following the format below:
 
-    Profitability Ratios:
-        ROA (Return on Assets)
-        Operating Profit Rate
-        Net Income to Total Assets
+Index	Bankrupt?
+1	0
+2	1
+...	...
+1012	1
+Notes
 
-    Leverage Ratios:
-        Debt Ratio %
-        Total Debt/Total Net Worth
-        Liability to Equity
-
-    Efficiency Ratios:
-        Total Asset Turnover
-        Inventory Turnover Rate
-        Accounts Receivable Turnover
-
-    Cash Flow Indicators:
-        Cash Flow to Sales
-        Cash Flow to Total Assets
-        Cash Flow Per Share
-
-    Growth Indicators:
-        Total Asset Growth Rate
-        Net Value Growth Rate
-        Operating Profit Growth Rate
-
-    Market Value Ratios:
-        Net Value Per Share
-        Earnings Per Share (EPS)
-
-    Other Key Ratios:
-        Interest Coverage Ratio
-        Degree of Financial Leverage (DFL)
-        Retained Earnings to Total Assets
-
-7. Example of Feature Reduction
-
-Here's how you might reduce features step by step:
-Step 1: Remove Redundant Features
-
-    Highly Correlated Features: For example, if Quick Assets/Total Assets and Quick Assets/Current Liability are highly correlated, keep one.
-
-Step 2: Select Key Financial Ratios
-
-    From Each Category:
-        Liquidity: Current Ratio
-        Profitability: ROA, Net Income to Total Assets
-        Leverage: Debt Ratio %
-        Efficiency: Total Asset Turnover
-
-Step 3: Use Feature Importance Scores
-
-    Train a Random Forest Model:
-        Get feature importance scores.
-        Select top 25-50 features based on these scores.
-
-8. Finalizing the Feature Set
-
-    Ensure Diversity: Include features from different categories to capture various aspects of financial health.
-    Avoid Overfitting: Be cautious of selecting too many features based on one model's importance scores.
-
-9. Validate Your Feature Set
-
-    Cross-Validation: Use techniques like k-fold cross-validation to assess model performance.
-    Hold-Out Test Set: Validate the model on unseen data to ensure generalizability.
-
-10. Documentation
-
-    Keep Records: Document the feature selection process and rationale.
-    Explainability: Be prepared to explain why certain features were selected or removed.
+    Ensure all features and transformations are consistent between the training and test data.
+    Submit the final predictions in the specified format for evaluation.
